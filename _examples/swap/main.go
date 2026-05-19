@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ilkamo/jupiter-go/jupiter"
-	"github.com/ilkamo/jupiter-go/solana"
+	"github.com/lou-hui/jupiter-go/jupiter"
+	"github.com/lou-hui/jupiter-go/solana"
 )
 
 func main() {
