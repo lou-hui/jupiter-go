@@ -1,0 +1,78 @@
+{
+  "inputMint": "So11111111111111111111111111111111111111112",
+  "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+  "inAmount": "1000000",
+  "outAmount": "125630",
+  "otherAmountThreshold": "125002",
+  "swapMode": "ExactIn",
+  "slippageBps": 50,
+  "routePlan": [
+    {
+      "swapInfo": {
+        "ammKey": "AvBSC1KmFNceHpD6jyyXBV6gMXFxZ8BJJ3HVUN8kCurJ",
+        "label": "Obric V2",
+        "inputMint": "So11111111111111111111111111111111111111112",
+        "outputMint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "inAmount": "1000000",
+        "outAmount": "125630"
+      },
+      "percent": 100,
+      "bps": 10000,
+      "usdValue": 0.1256
+    }
+  ],
+  "computeBudgetInstructions": [
+    {
+      "programId": "ComputeBudget111111111111111111111111111111",
+      "accounts": [],
+      "data": "AwDh9QAAAA=="
+    }
+  ],
+  "setupInstructions": [
+    {
+      "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe8bXL",
+      "accounts": [
+        {
+          "pubkey": "jdocuPgEAjMfihABsPgKEvYtsmMzjUHeq9LX4Hvs7f3",
+          "isSigner": true,
+          "isWritable": true
+        }
+      ],
+      "data": "AQ=="
+    }
+  ],
+  "swapInstruction": {
+    "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+    "accounts": [
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": false,
+        "isWritable": false
+      }
+    ],
+    "data": "PrpFQAAAAAA="
+  },
+  "cleanupInstruction": {
+    "programId": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe8bXL",
+    "accounts": [
+      {
+        "pubkey": "jdocuPgEAjMfihABsPgKEvYtsmMzjUHeq9LX4Hvs7f3",
+        "isSigner": true,
+        "isWritable": true
+      }
+    ],
+    "data": "AQ=="
+  },
+  "otherInstructions": [],
+  "tipInstruction": null,
+  "addressesByLookupTableAddress": {
+    "8szGkuLTAux9XMgZ2vtY39jVSowEovnE9GXSpnpumXJo": [
+      "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe8bXL"
+    ]
+  },
+  "blockhashWithMetadata": {
+    "blockhash": [1, 2, 3, 4, 5],
+    "lastValidBlockHeight": 299999999
+  }
+}

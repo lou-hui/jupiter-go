@@ -1,0 +1,321 @@
+openapi: 3.0.3
+info:
+  title: Jupiter Swap v2 Router API
+  version: 2.0.0
+  description: |
+    Jupiter Router API v2 - Build Transaction endpoint.
+    Returns raw swap instructions for building custom transactions in a single call.
+
+servers:
+  - url: https://api.jup.ag/swap/v2
+    description: Paid tier API endpoint
+  - url: https://lite-api.jup.ag/swap/v2
+    description: Free tier API endpoint with rate limits
+
+paths:
+  /build:
+    get:
+      operationId: BuildGet
+      tags:
+        - Swap
+      summary: build
+      description: |
+        Get a swap quote with raw instructions for building custom transactions.
+        This combines the quote and instructions steps into a single call.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: inputMint
+          in: query
+          required: true
+          description: The mint address of the input token
+          schema:
+            type: string
+        - name: outputMint
+          in: query
+          required: true
+          description: The mint address of the output token
+          schema:
+            type: string
+        - name: amount
+          in: query
+          required: true
+          description: The amount to swap in the smallest unit of the input token
+          schema:
+            type: string
+        - name: taker
+          in: query
+          required: true
+          description: Public key of the user initiating the swap
+          schema:
+            type: string
+        - name: slippageBps
+          in: query
+          required: false
+          description: Slippage tolerance in basis points. Defaults to 50.
+          schema:
+            oneOf:
+              - type: string
+                enum:
+                  - rtse
+              - type: integer
+                default: 50
+        - name: mode
+          in: query
+          required: false
+          description: Quoting mode. "fast" trades quote optimality for reduced latency.
+          schema:
+            type: string
+            enum:
+              - fast
+        - name: dexes
+          in: query
+          required: false
+          description: Comma-separated list of DEXes to restrict routing to. Mutually exclusive with excludeDexes.
+          schema:
+            type: string
+        - name: excludeDexes
+          in: query
+          required: false
+          description: Comma-separated list of DEXes to exclude. Mutually exclusive with dexes.
+          schema:
+            type: string
+        - name: platformFeeBps
+          in: query
+          required: false
+          description: Platform fee in basis points. If positive, feeAccount is required.
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 10000
+        - name: feeAccount
+          in: query
+          required: false
+          description: Token account to collect platform fees. Required if platformFeeBps is positive.
+          schema:
+            type: string
+        - name: maxAccounts
+          in: query
+          required: false
+          description: Maximum number of accounts for the swap route. Defaults to 64.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 64
+            default: 64
+        - name: payer
+          in: query
+          required: false
+          description: Account that pays transaction fees and rent. Defaults to taker when not passed in.
+          schema:
+            type: string
+        - name: wrapAndUnwrapSol
+          in: query
+          required: false
+          description: Whether to wrap/unwrap SOL. Defaults to true.
+          schema:
+            type: boolean
+            default: true
+        - name: destinationTokenAccount
+          in: query
+          required: false
+          description: SPL token account to receive output tokens. Mutually exclusive with nativeDestinationAccount.
+          schema:
+            type: string
+        - name: nativeDestinationAccount
+          in: query
+          required: false
+          description: Native SOL account to receive output. Mutually exclusive with destinationTokenAccount.
+          schema:
+            type: string
+        - name: blockhashSlotsToExpiry
+          in: query
+          required: false
+          description: Number of slots until the blockhash expires. Defaults to 150.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 300
+            default: 150
+        - name: tipAmount
+          in: query
+          required: false
+          description: SOL tip amount in lamports. Adds a tip instruction for use with /submit.
+          schema:
+            type: string
+        - name: computeUnitPricePercentile
+          in: query
+          required: false
+          description: >
+            Percentile of compute unit price to use.
+            Named levels: "medium" (25th), "high" (50th), "veryHigh" (75th),
+            or a number 0-10000 in basis points.
+          schema:
+            oneOf:
+              - type: string
+                enum:
+                  - medium
+                  - high
+                  - veryHigh
+              - type: integer
+                minimum: 0
+                maximum: 10000
+      responses:
+        '200':
+          description: Quote with raw swap instructions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  schemas:
+    AccountMeta:
+      type: object
+      required:
+        - pubkey
+        - isSigner
+        - isWritable
+      properties:
+        pubkey:
+          type: string
+        isSigner:
+          type: boolean
+        isWritable:
+          type: boolean
+
+    Instruction:
+      type: object
+      required:
+        - programId
+        - accounts
+        - data
+      properties:
+        programId:
+          type: string
+        accounts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountMeta'
+        data:
+          type: string
+
+    SwapInfoV2:
+      type: object
+      required:
+        - ammKey
+        - inputMint
+        - outputMint
+        - inAmount
+        - outAmount
+      properties:
+        ammKey:
+          type: string
+        label:
+          type: string
+        inputMint:
+          type: string
+        outputMint:
+          type: string
+        inAmount:
+          type: string
+        outAmount:
+          type: string
+
+    RoutePlanStepV2:
+      type: object
+      required:
+        - swapInfo
+        - percent
+      properties:
+        swapInfo:
+          $ref: '#/components/schemas/SwapInfoV2'
+        percent:
+          type: integer
+        bps:
+          type: integer
+        usdValue:
+          type: number
+
+    BlockhashWithMetadata:
+      type: object
+      properties:
+        blockhash:
+          type: array
+          items:
+            type: integer
+        lastValidBlockHeight:
+          type: integer
+
+    BuildResponse:
+      type: object
+      properties:
+        inputMint:
+          type: string
+        outputMint:
+          type: string
+        inAmount:
+          type: string
+        outAmount:
+          type: string
+        otherAmountThreshold:
+          type: string
+          description: Minimum output amount after slippage
+        swapMode:
+          type: string
+        slippageBps:
+          type: number
+        routePlan:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutePlanStepV2'
+        computeBudgetInstructions:
+          type: array
+          description: Compute unit price instruction (does not include compute unit limit)
+          items:
+            $ref: '#/components/schemas/Instruction'
+        setupInstructions:
+          type: array
+          description: Pre-swap setup instructions (e.g. create ATAs)
+          items:
+            $ref: '#/components/schemas/Instruction'
+        swapInstruction:
+          $ref: '#/components/schemas/Instruction'
+        cleanupInstruction:
+          description: Post-swap cleanup instruction
+          $ref: '#/components/schemas/Instruction'
+        otherInstructions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Instruction'
+        tipInstruction:
+          $ref: '#/components/schemas/Instruction'
+        addressesByLookupTableAddress:
+          type: object
+          description: Address lookup table mappings for v0 transactions
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        blockhashWithMetadata:
+          $ref: '#/components/schemas/BlockhashWithMetadata'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer

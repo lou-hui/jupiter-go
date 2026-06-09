@@ -1,10 +1,10 @@
-module main.go
+module v2build
 
 go 1.25.1
 
 require github.com/lou-hui/jupiter-go v0.2.2
 
-// replace github.com/lou-hui/jupiter-go => ../../
+replace github.com/lou-hui/jupiter-go => ../../
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
