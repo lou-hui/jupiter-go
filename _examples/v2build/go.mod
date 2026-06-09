@@ -2,9 +2,12 @@ module v2build
 
 go 1.25.1
 
-require github.com/lou-hui/jupiter-go v0.2.2
+require (
+	github.com/gagliardetto/solana-go v1.14.0
+	github.com/lou-hui/jupiter-go v0.3.0
+)
 
-replace github.com/lou-hui/jupiter-go => ../../
+// replace github.com/lou-hui/jupiter-go => ../../
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
@@ -15,7 +18,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/gagliardetto/binary v0.8.0 // indirect
-	github.com/gagliardetto/solana-go v1.14.0 // indirect
 	github.com/gagliardetto/treeout v0.1.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/rpc v1.2.0 // indirect
