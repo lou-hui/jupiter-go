@@ -74,8 +74,8 @@ type BuildResponse struct {
 
 // RoutePlanStepV2 defines model for RoutePlanStepV2.
 type RoutePlanStepV2 struct {
-	Bps      *int       `json:"bps,omitempty"`
-	Percent  int        `json:"percent"`
+	Bps      *float64   `json:"bps,omitempty"`
+	Percent  *float64   `json:"percent,omitempty"`
 	SwapInfo SwapInfoV2 `json:"swapInfo"`
 	UsdValue *float64   `json:"usdValue,omitempty"`
 }

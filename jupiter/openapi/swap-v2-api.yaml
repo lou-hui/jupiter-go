@@ -238,14 +238,13 @@ components:
       type: object
       required:
         - swapInfo
-        - percent
       properties:
         swapInfo:
           $ref: '#/components/schemas/SwapInfoV2'
         percent:
-          type: integer
+          type: number
         bps:
-          type: integer
+          type: number
         usdValue:
           type: number
 
