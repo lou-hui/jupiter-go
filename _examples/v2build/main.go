@@ -120,8 +120,8 @@ func buildTransaction(build *jupiter.BuildResponse, feePayer string) (string, er
 
 	// Use the blockhash returned by the API directly — no extra RPC call needed.
 	var recentBlockhash solanago.Hash
-	if build.BlockhashWithMetadata != nil && build.BlockhashWithMetadata.Blockhash != nil {
-		bh := *build.BlockhashWithMetadata.Blockhash
+	if build.BlockhashWithMetadata != nil && len(build.BlockhashWithMetadata.Blockhash) > 0 {
+		bh := build.BlockhashWithMetadata.Blockhash
 		for i := 0; i < 32 && i < len(bh); i++ {
 			recentBlockhash[i] = byte(bh[i])
 		}

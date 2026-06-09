@@ -34,13 +34,20 @@ const (
 
 // BlockhashWithMetadata defines model for BlockhashWithMetadata.
 type BlockhashWithMetadata struct {
-	Blockhash            *[]int `json:"blockhash,omitempty"`
-	LastValidBlockHeight *int   `json:"lastValidBlockHeight,omitempty"`
+	Blockhash            []int               `json:"blockhash,omitempty"`
+	LastValidBlockHeight *int                `json:"lastValidBlockHeight,omitempty"`
+	FetchedAt            *BlockhashFetchedAt `json:"fetchedAt,omitempty"`
+}
+
+// BlockhashFetchedAt is the server timestamp at which the blockhash was fetched.
+type BlockhashFetchedAt struct {
+	SecsSinceEpoch  *int64 `json:"secs_since_epoch,omitempty"`
+	NanosSinceEpoch *int64 `json:"nanos_since_epoch,omitempty"`
 }
 
 // BuildResponse defines model for BuildResponse.
 type BuildResponse struct {
-	AddressesByLookupTableAddress *map[string][]string `json:"addressesByLookupTableAddress,omitempty"`
+	AddressesByLookupTableAddress *map[string][]string   `json:"addressesByLookupTableAddress,omitempty"`
 	BlockhashWithMetadata         *BlockhashWithMetadata `json:"blockhashWithMetadata,omitempty"`
 	CleanupInstruction            *Instruction           `json:"cleanupInstruction,omitempty"`
 
@@ -51,10 +58,11 @@ type BuildResponse struct {
 	OutAmount                 *string        `json:"outAmount,omitempty"`
 
 	// OtherAmountThreshold Minimum output amount after slippage
-	OtherAmountThreshold *string              `json:"otherAmountThreshold,omitempty"`
-	OtherInstructions    *[]Instruction       `json:"otherInstructions,omitempty"`
-	OutputMint           *string              `json:"outputMint,omitempty"`
-	RoutePlan            *[]RoutePlanStepV2   `json:"routePlan,omitempty"`
+	OtherAmountThreshold *string            `json:"otherAmountThreshold,omitempty"`
+	PriceImpactPct       *string            `json:"priceImpactPct,omitempty"`
+	OtherInstructions    *[]Instruction     `json:"otherInstructions,omitempty"`
+	OutputMint           *string            `json:"outputMint,omitempty"`
+	RoutePlan            *[]RoutePlanStepV2 `json:"routePlan,omitempty"`
 
 	// SetupInstructions Pre-swap setup instructions (e.g. create ATAs)
 	SetupInstructions *[]Instruction `json:"setupInstructions,omitempty"`
@@ -74,12 +82,12 @@ type RoutePlanStepV2 struct {
 
 // SwapInfoV2 defines model for SwapInfoV2.
 type SwapInfoV2 struct {
-	AmmKey    string  `json:"ammKey"`
-	InAmount  string  `json:"inAmount"`
-	InputMint string  `json:"inputMint"`
-	Label     *string `json:"label,omitempty"`
-	OutAmount string  `json:"outAmount"`
-	OutputMint string `json:"outputMint"`
+	AmmKey     string  `json:"ammKey"`
+	InAmount   string  `json:"inAmount"`
+	InputMint  string  `json:"inputMint"`
+	Label      *string `json:"label,omitempty"`
+	OutAmount  string  `json:"outAmount"`
+	OutputMint string  `json:"outputMint"`
 }
 
 // BuildGetParamsComputeUnitPricePercentile defines parameters for BuildGet.
