@@ -1,4 +1,4 @@
-package jupiter
+package swapv1
 
 import (
 	_ "embed"

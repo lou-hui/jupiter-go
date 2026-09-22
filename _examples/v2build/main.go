@@ -3,20 +3,20 @@ package main
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
 	solanago "github.com/gagliardetto/solana-go"
 	"github.com/lou-hui/jupiter-go/jupiter"
-	"github.com/lou-hui/jupiter-go/solana"
+	"github.com/lou-hui/jupiter-go/jupiter/swapv2"
 )
 
 func main() {
-	// Initialize client with API key (automatically added to all requests)
-	apiKey := "{YOUR_JUPITER_API_KEY}"
-	jupClient, err := jupiter.NewClientWithResponses(
-		jupiter.DefaultAPIV2URL,
+	// Initialize the root client with API key (automatically added to all requests)
+	apiKey := "jup_8b426080ae9d73d6138f9455eebd494368acd18ae6f9323fdf07cc00d82b332c"
+	jupClient, err := jupiter.NewClient(
+		jupiter.DefaultAPIURL,
 		jupiter.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 			req.Header.Set("x-api-key", apiKey)
 			return nil
@@ -31,12 +31,12 @@ func main() {
 	// Call GET /swap/v2/build — combines quote + instructions in one request.
 	// No prior /quote call needed: inputMint, outputMint, amount, and taker are
 	// passed directly as query parameters.
-	slippageBps := jupiter.BuildGetParamsSlippageBps("50")
-	buildResp, err := jupClient.BuildGetWithResponse(ctx, &jupiter.BuildGetParams{
+	slippageBps := "50"
+	buildResp, err := jupClient.BuildGetWithResponse(ctx, &swapv2.BuildGetParams{
 		InputMint:   "So11111111111111111111111111111111111111112",
 		OutputMint:  "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
 		Amount:      "100000",
-		Taker:       "{YOUR_PUBLIC_KEY}",
+		Taker:       "CijjYuhG92wQ9FFEpxKW8JqtzJEcwMqWmjLurtC3tsfx",
 		SlippageBps: &slippageBps,
 	})
 	if err != nil {
@@ -48,50 +48,52 @@ func main() {
 	}
 
 	build := buildResp.JSON200
-
+	if raw, err := json.MarshalIndent(build, "", "  "); err == nil {
+		fmt.Println(string(raw))
+	}
 	fmt.Printf("Route: %s -> %s\n", *build.InputMint, *build.OutputMint)
 	fmt.Printf("In: %s, Out: %s\n", *build.InAmount, *build.OutAmount)
 
 	// Assemble a versioned transaction from the raw instructions returned by v2.
-	tx, err := buildTransaction(build, "{YOUR_PUBLIC_KEY}")
-	if err != nil {
-		panic(err)
-	}
+	// tx, err := buildTransaction(build, "CijjYuhG92wQ9FFEpxKW8JqtzJEcwMqWmjLurtC3tsfx")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Create a wallet from private key.
-	walletPrivateKey := "{YOUR_PRIVATE_KEY}"
-	wallet, err := solana.NewWalletFromPrivateKeyBase58(walletPrivateKey)
-	if err != nil {
-		panic(err)
-	}
+	// // Create a wallet from private key.
+	// walletPrivateKey := "{YOUR_PRIVATE_KEY}"
+	// wallet, err := solana.NewWalletFromPrivateKeyBase58(walletPrivateKey)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Create a Solana client. Change the URL to the desired Solana node.
-	solanaClient, err := solana.NewClient(wallet, "https://api.mainnet-beta.solana.com")
-	if err != nil {
-		panic(err)
-	}
+	// // Create a Solana client. Change the URL to the desired Solana node.
+	// solanaClient, err := solana.NewClient(wallet, "https://api.mainnet-beta.solana.com")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Sign and send the transaction.
-	signedTx, err := solanaClient.SendTransactionOnChain(ctx, tx)
-	if err != nil {
-		panic(err)
-	}
+	// // Sign and send the transaction.
+	// signedTx, err := solanaClient.SendTransactionOnChain(ctx, tx)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	// Wait a bit to let the transaction propagate to the network.
-	// This is just an example and not a best practice.
-	time.Sleep(20 * time.Second)
+	// // Wait a bit to let the transaction propagate to the network.
+	// // This is just an example and not a best practice.
+	// time.Sleep(20 * time.Second)
 
-	// Check the transaction status.
-	_, err = solanaClient.CheckSignature(ctx, signedTx)
-	if err != nil {
-		panic(err)
-	}
+	// // Check the transaction status.
+	// _, err = solanaClient.CheckSignature(ctx, signedTx)
+	// if err != nil {
+	// 	panic(err)
+	// }
 }
 
 // buildTransaction assembles a transaction from the raw instructions returned
 // by GET /swap/v2/build. The blockhash embedded in blockhashWithMetadata is
 // used directly so no extra RPC call is required.
-func buildTransaction(build *jupiter.BuildResponse, feePayer string) (string, error) {
+func buildTransaction(build *swapv2.BuildResponse, feePayer string) (string, error) {
 	feePayerKey, err := solanago.PublicKeyFromBase58(feePayer)
 	if err != nil {
 		return "", fmt.Errorf("invalid fee payer: %w", err)
@@ -120,8 +122,8 @@ func buildTransaction(build *jupiter.BuildResponse, feePayer string) (string, er
 
 	// Use the blockhash returned by the API directly — no extra RPC call needed.
 	var recentBlockhash solanago.Hash
-	if build.BlockhashWithMetadata != nil && len(build.BlockhashWithMetadata.Blockhash) > 0 {
-		bh := build.BlockhashWithMetadata.Blockhash
+	if build.BlockhashWithMetadata != nil && build.BlockhashWithMetadata.Blockhash != nil {
+		bh := *build.BlockhashWithMetadata.Blockhash
 		for i := 0; i < 32 && i < len(bh); i++ {
 			recentBlockhash[i] = byte(bh[i])
 		}
@@ -144,7 +146,7 @@ func buildTransaction(build *jupiter.BuildResponse, feePayer string) (string, er
 	return base64.StdEncoding.EncodeToString(txBytes), nil
 }
 
-func toSolanaInstruction(ix jupiter.Instruction) solanago.Instruction {
+func toSolanaInstruction(ix swapv2.Instruction) solanago.Instruction {
 	programID := solanago.MustPublicKeyFromBase58(ix.ProgramId)
 
 	var accounts []*solanago.AccountMeta

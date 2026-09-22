@@ -1,0 +1,84 @@
+openapi: 3.0.3
+info:
+  title: Jupiter Price v3 API
+  version: 3.0.0
+  description: |
+    Jupiter Price API v3 - returns current USD price and liquidity metadata
+    for one or more token mints.
+
+servers:
+  - url: https://api.jup.ag/price/v3
+    description: Paid tier API endpoint
+  - url: https://lite-api.jup.ag/price/v3
+    description: Free tier API endpoint with rate limits
+
+paths:
+  /:
+    get:
+      operationId: GetPrice
+      tags:
+        - Price
+      summary: price
+      description: |
+        Get the current USD price for one or more token mints.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          description: Comma-separated list of token mint addresses.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Map of mint address to price data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+
+  schemas:
+    PriceData:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        liquidity:
+          type: number
+        usdPrice:
+          type: number
+        blockId:
+          type: integer
+        decimals:
+          type: integer
+        priceChange24h:
+          type: number
+
+    PriceResponse:
+      type: object
+      description: Map keyed by token mint address.
+      additionalProperties:
+        $ref: '#/components/schemas/PriceData'
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        code:
+          type: integer

@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/lou-hui/jupiter-go/jupiter"
+	"github.com/lou-hui/jupiter-go/jupiter/swapv1"
 	"github.com/lou-hui/jupiter-go/solana"
 )
 
 func main() {
-	// Initialize client with API key (automatically added to all requests)
+	// Initialize the root client with API key (automatically added to all requests)
 	apiKey := "{YOUR_JUPITER_API_KEY}"
-	jupClient, err := jupiter.NewClientWithResponses(
+	jupClient, err := jupiter.NewClient(
 		jupiter.DefaultAPIURL,
 		jupiter.WithRequestEditorFn(func(ctx context.Context, req *http.Request) error {
 			req.Header.Set("x-api-key", apiKey)
@@ -31,7 +32,7 @@ func main() {
 	// Get the current quote for a swap.
 	// Ensure that the input and output mints are valid.
 	// The amount is the smallest unit of the input token.
-	quoteResponse, err := jupClient.QuoteGetWithResponse(ctx, &jupiter.QuoteGetParams{
+	quoteResponse, err := jupClient.QuoteGetWithResponse(ctx, &swapv1.QuoteGetParams{
 		InputMint:   "So11111111111111111111111111111111111111112",
 		OutputMint:  "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN",
 		Amount:      100000,
@@ -53,28 +54,28 @@ func main() {
 	prioritizationFeeLamports := &struct {
 		JitoTipLamports              *uint64 `json:"jitoTipLamports,omitempty"`
 		PriorityLevelWithMaxLamports *struct {
-			MaxLamports   *uint64                                                                                `json:"maxLamports,omitempty"`
-			PriorityLevel *jupiter.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel `json:"priorityLevel,omitempty"`
+			MaxLamports   *uint64                                                                               `json:"maxLamports,omitempty"`
+			PriorityLevel *swapv1.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel `json:"priorityLevel,omitempty"`
 		} `json:"priorityLevelWithMaxLamports,omitempty"`
 	}{
 		PriorityLevelWithMaxLamports: &struct {
-			MaxLamports   *uint64                                                                                `json:"maxLamports,omitempty"`
-			PriorityLevel *jupiter.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel `json:"priorityLevel,omitempty"`
+			MaxLamports   *uint64                                                                               `json:"maxLamports,omitempty"`
+			PriorityLevel *swapv1.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel `json:"priorityLevel,omitempty"`
 		}{
 			MaxLamports:   new(uint64),
-			PriorityLevel: new(jupiter.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel),
+			PriorityLevel: new(swapv1.SwapRequestPrioritizationFeeLamportsPriorityLevelWithMaxLamportsPriorityLevel),
 		},
 	}
 
 	*prioritizationFeeLamports.PriorityLevelWithMaxLamports.MaxLamports = 1000
-	*prioritizationFeeLamports.PriorityLevelWithMaxLamports.PriorityLevel = jupiter.High
+	*prioritizationFeeLamports.PriorityLevelWithMaxLamports.PriorityLevel = swapv1.High
 
 	// If you prefer to set a Jito tip, you can use the following line instead of the above block.
 	// *prioritizationFeeLamports.JitoTipLamports = 1000
 
 	// Get instructions for a swap.
 	// Ensure your public key is valid.
-	swapResponse, err := jupClient.SwapPostWithResponse(ctx, jupiter.SwapPostJSONRequestBody{
+	swapResponse, err := jupClient.SwapPostWithResponse(ctx, swapv1.SwapPostJSONRequestBody{
 		PrioritizationFeeLamports: prioritizationFeeLamports,
 		QuoteResponse:             *quote,
 		UserPublicKey:             "{YOUR_PUBLIC_KEY}",

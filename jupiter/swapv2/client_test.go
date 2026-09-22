@@ -1,4 +1,4 @@
-package jupiter
+package swapv2
 
 import (
 	_ "embed"
@@ -49,6 +49,7 @@ func TestBuildResponse_Unmarshal(t *testing.T) {
 
 	require.NotNil(t, response.BlockhashWithMetadata)
 	require.Equal(t, 299999999, *response.BlockhashWithMetadata.LastValidBlockHeight)
-	require.Len(t, response.BlockhashWithMetadata.Blockhash, 32)
+	require.NotNil(t, response.BlockhashWithMetadata.Blockhash)
+	require.Len(t, *response.BlockhashWithMetadata.Blockhash, 32)
 	require.NotNil(t, response.BlockhashWithMetadata.FetchedAt)
 }
