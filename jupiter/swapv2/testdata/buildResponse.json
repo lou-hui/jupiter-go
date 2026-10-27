@@ -78,5 +78,7 @@
       "secs_since_epoch": 1780975633,
       "nanos_since_epoch": 933144014
     }
-  }
+  },
+  "transactionVersion": 0,
+  "computeUnitPrice": "100000"
 }

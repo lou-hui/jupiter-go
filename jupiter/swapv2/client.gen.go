@@ -24,6 +24,12 @@ const (
 	Fast BuildGetParamsMode = "fast"
 )
 
+// Defines values for BuildGetParamsTransactionVersion.
+const (
+	N0 BuildGetParamsTransactionVersion = 0
+	N1 BuildGetParamsTransactionVersion = 1
+)
+
 // AccountMeta defines model for AccountMeta.
 type AccountMeta struct {
 	IsSigner   bool   `json:"isSigner"`
@@ -55,6 +61,7 @@ type BuildResponse struct {
 
 	// ComputeBudgetInstructions Compute unit price instruction (does not include compute unit limit)
 	ComputeBudgetInstructions *[]Instruction `json:"computeBudgetInstructions,omitempty"`
+	ComputeUnitPrice          *string        `json:"computeUnitPrice,omitempty"`
 	InAmount                  *string        `json:"inAmount,omitempty"`
 	InputMint                 *string        `json:"inputMint,omitempty"`
 
@@ -66,11 +73,12 @@ type BuildResponse struct {
 	RoutePlan            *[]RoutePlanStepV2 `json:"routePlan,omitempty"`
 
 	// SetupInstructions Pre-swap setup instructions (e.g. create ATAs)
-	SetupInstructions *[]Instruction `json:"setupInstructions,omitempty"`
-	SlippageBps       *float32       `json:"slippageBps,omitempty"`
-	SwapInstruction   *Instruction   `json:"swapInstruction,omitempty"`
-	SwapMode          *string        `json:"swapMode,omitempty"`
-	TipInstruction    *Instruction   `json:"tipInstruction,omitempty"`
+	SetupInstructions  *[]Instruction `json:"setupInstructions,omitempty"`
+	SlippageBps        *float32       `json:"slippageBps,omitempty"`
+	SwapInstruction    *Instruction   `json:"swapInstruction,omitempty"`
+	SwapMode           *string        `json:"swapMode,omitempty"`
+	TipInstruction     *Instruction   `json:"tipInstruction,omitempty"`
+	TransactionVersion *int           `json:"transactionVersion,omitempty"`
 }
 
 // ErrorResponse defines model for ErrorResponse.
@@ -159,10 +167,16 @@ type BuildGetParams struct {
 
 	// ComputeUnitPricePercentile Percentile of compute unit price to use, as a number (0-10000 basis points), or a named level: "medium" (25th), "high" (50th), "veryHigh" (75th).
 	ComputeUnitPricePercentile *string `form:"computeUnitPricePercentile,omitempty" json:"computeUnitPricePercentile,omitempty"`
+
+	// TransactionVersion Transaction version to build. 0 for v0 transactions, 1 for legacy transactions. Defaults to 0.
+	TransactionVersion *BuildGetParamsTransactionVersion `form:"transactionVersion,omitempty" json:"transactionVersion,omitempty"`
 }
 
 // BuildGetParamsMode defines parameters for BuildGet.
 type BuildGetParamsMode string
+
+// BuildGetParamsTransactionVersion defines parameters for BuildGet.
+type BuildGetParamsTransactionVersion int
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -549,6 +563,22 @@ func NewBuildGetRequest(server string, params *BuildGetParams) (*http.Request, e
 		if params.ComputeUnitPricePercentile != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "computeUnitPricePercentile", runtime.ParamLocationQuery, *params.ComputeUnitPricePercentile); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.TransactionVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "transactionVersion", runtime.ParamLocationQuery, *params.TransactionVersion); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

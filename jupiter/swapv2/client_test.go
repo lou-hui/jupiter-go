@@ -52,4 +52,10 @@ func TestBuildResponse_Unmarshal(t *testing.T) {
 	require.NotNil(t, response.BlockhashWithMetadata.Blockhash)
 	require.Len(t, *response.BlockhashWithMetadata.Blockhash, 32)
 	require.NotNil(t, response.BlockhashWithMetadata.FetchedAt)
+
+	require.NotNil(t, response.TransactionVersion)
+	require.Equal(t, 0, *response.TransactionVersion)
+
+	require.NotNil(t, response.ComputeUnitPrice)
+	require.Equal(t, "100000", *response.ComputeUnitPrice)
 }
